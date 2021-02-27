@@ -1,0 +1,25 @@
+{
+  "todo": [
+    {
+      "assignedTo": {
+        "name": "Ryan"
+      },
+      "category": "Server / Client - Sprint 1",
+      "creation_time": "2020-10-31T11:42:32.803Z",
+      "description": {
+        "content": "Write a Bluetooth Library for the server and client, with the same UUID.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "Write a Bluetooth Library for the server and client, with the same UUID.\n\nShould support:\n- Creating a server which can support multiple connections\n- Connecting to a server\n- Expose some nice Kotlin interface\n\nAPI inspiration from: https://github.com/ThanosFisherman/BlueFlow\n\n",
+        "mime": "text/markdown"
+      },
+      "id": "1",
+      "references": [],
+      "title": "Bluetooth Library"
+    }
+  ],
+  "in-progress": [],
+  "testing": [],
+  "done": []
+}
