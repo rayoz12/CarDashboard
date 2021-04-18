@@ -22,6 +22,10 @@ import kotlinx.coroutines.launch
 import me.rytek.cardashboardserverv2.ui.theme.CarDashboardServerV2Theme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var mService: ServerListenerService
+    private var mBound: Boolean = false
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
