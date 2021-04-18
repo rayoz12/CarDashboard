@@ -8,7 +8,7 @@ import me.rytek.cardashboardclient.services.CommunicationService
 
 class CommunicationViewModel: ViewModel() {
 
-    lateinit var commsService: CommunicationService
+    var commsService: CommunicationService? = null
 
     private var isInitialised = false
 

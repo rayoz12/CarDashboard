@@ -1,5 +1,6 @@
 package me.rytek.cardashboardclient.viewmodel
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
@@ -57,40 +58,40 @@ class SettingsViewModel: ViewModel() {
                 // Wifi
                 if (wifiAddress != null) {
                     if (wifiAddress != mServerAddress.value) {
-                        setServerAddress(wifiAddress)
+                        mServerAddress.postValue(wifiAddress)
                         wifiChanged = true;
                     }
                 }
                 if (wifiPort != null) {
                     if (wifiPort != mServerPort.value) {
-                        setServerPort(wifiPort)
+                        mServerPort.postValue(wifiPort)
                         wifiChanged = true;
                     }
                 }
                 // BT
                 if (btName != null) {
                     if (btName != mDeviceName.value) {
-                        setDeviceName(btName)
+                        mDeviceName.postValue(btName)
                         BTChanged = true
                     }
                 }
                 if (btAddress != null) {
                     if (btAddress != mDeviceHardwareAddress.value) {
-                        setDeviceHardwareAddress(btAddress)
+                        mDeviceHardwareAddress.postValue(btAddress)
                         BTChanged = true
                     }
                 }
                 //MQTT
                 if (mqttAddress != null) {
                     if (mqttAddress != mBrokerAddress.value) {
-                        setBrokerAddress(mqttAddress)
+                        mBrokerAddress.postValue(mqttAddress)
                         mqttChanged = true
                     }
                 }
 
                 if (mqttTopic != null) {
                     if (mqttTopic != mTopic.value) {
-                        setTopic(mqttTopic)
+                        mTopic.postValue(mqttTopic)
                         mqttChanged = true
                     }
                 }
@@ -103,6 +104,7 @@ class SettingsViewModel: ViewModel() {
                     mBTConfig.value = BTConfiguration(btName, btAddress)
                 }
                 if (mqttChanged) {
+                    Log.d("SettingsViewModel", MQTTConfiguration(mqttAddress, mqttTopic).toString())
                     mMQTTConfig.value = MQTTConfiguration(mqttAddress, mqttTopic)
                 }
             }
@@ -192,7 +194,7 @@ class SettingsViewModel: ViewModel() {
     private val mBTConfig = MutableStateFlow(BTConfiguration(null, null))
     val BTConfig: StateFlow<BTConfiguration> = mBTConfig
 
-    private val mMQTTConfig = MutableStateFlow(MQTTConfiguration(null, null))
+    private val mMQTTConfig = MutableStateFlow(MQTTConfiguration("tcp://maqiatto.com:1883", "glass2k@ymail.com/CarDashboard"))
     val MQTTConfig: StateFlow<MQTTConfiguration> = mMQTTConfig
 
 }

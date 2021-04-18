@@ -13,9 +13,9 @@ import org.eclipse.paho.client.mqttv3.*
 class MQTTInterface(val context: Context): ConnectionInterface {
 
     override var isConnected: Boolean = false
-        get() = this.mqttClient.isConnected
+        get() = if (mqttClient != null) mqttClient!!.isConnected else false
 
-    private lateinit var mqttClient: MqttAndroidClient
+    private var mqttClient: MqttAndroidClient? = null
 
     private lateinit var config: MQTTConfiguration
 
@@ -30,15 +30,15 @@ class MQTTInterface(val context: Context): ConnectionInterface {
      */
     override var onMessage = _messageFlow.asSharedFlow() //publicly exposed as read-only shared flow
 
-
-
     fun init(mqttConfig: MQTTConfiguration) {
         val serverURI = "tcp://maqiatto.com:1883"
+
+        Log.d(TAG, "Init")
 
         config = mqttConfig
 
         mqttClient = MqttAndroidClient(context, mqttConfig.address, "CarDashboard${(0..100).random()}")
-        mqttClient.setCallback(object : MqttCallback {
+        mqttClient!!.setCallback(object : MqttCallback {
             override fun messageArrived(topic: String?, message: MqttMessage?) {
                 Log.d(TAG, "Receive message: ${message.toString()} from topic: $topic")
             }
@@ -58,13 +58,15 @@ class MQTTInterface(val context: Context): ConnectionInterface {
      * Connect and start listening for messages
      */
     override fun start() {
+
+        Log.d(TAG, "Start")
         val options = MqttConnectOptions()
         options.userName = "glass2k@ymail.com"
         options.password = "CarDashboard".toCharArray()
         options.isAutomaticReconnect = true
 
         try {
-            mqttClient.connect(options, null, object : IMqttActionListener {
+            mqttClient!!.connect(options, null, object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken?) {
                     Log.d(TAG, "Connection success")
                 }
@@ -82,7 +84,9 @@ class MQTTInterface(val context: Context): ConnectionInterface {
      * Stop Listening for messages
      */
     override fun stop() {
-        mqttClient.disconnect()
+        Log.d(TAG, "Stop")
+
+        mqttClient!!.disconnect()
     }
 
     /**
@@ -98,6 +102,7 @@ class MQTTInterface(val context: Context): ConnectionInterface {
      * @param data
      */
     override fun send(data: String) {
-        mqttClient.publish(config.topic, MqttMessage(data.toByteArray()))
+        Log.d(TAG, "Sending: (Topic: ${config.topic}, Message: $data")
+        mqttClient!!.publish(config.topic, MqttMessage(data.toByteArray()))
     }
 }

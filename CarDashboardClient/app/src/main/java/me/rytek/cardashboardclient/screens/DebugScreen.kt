@@ -13,29 +13,39 @@ import me.rytek.cardashboardclient.viewmodel.CommunicationViewModel
 
 @Preview
 @Composable
-fun DebugScreen() {
+fun DebugScreenPreview() {
+    DebugScreen(CommunicationViewModel())
+}
 
-    val communicationViewModel: CommunicationViewModel = viewModel()
-    val commsService = communicationViewModel.commsService
+@Composable
+fun DebugScreen(communicationViewModel: CommunicationViewModel) {
 
     Column {
-        Spacer(Modifier.preferredHeight(16.dp))
+        Spacer(Modifier.height(16.dp))
         Text("Spotify", style = MaterialTheme.typography.h3)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            Button(onClick = {}) {
+            Button(onClick = {
+                communicationViewModel.commsService?.sendString("#,spotify-play,spotify:track:6rqhFgbbKwnb9MLmUQDhG6,\n")
+            }) {
                 Text(text = "Play Track")
             }
-            Button(onClick = {}) {
+            Button(onClick = {
+                communicationViewModel.commsService?.sendString("#,spotify-play,spotify:album:4m2880jivSbbyEGAKfITCa,\n")
+            }) {
                 Text(text = "Play Album")
             }
-            Button(onClick = {}) {
+            Button(onClick = {
+                communicationViewModel.commsService?.sendString("#,spotify-play,spotify:playlist:2q17dd27EffL3oiaicTRYS,\n")
+            }) {
                 Text(text = "Play Playlist")
             }
         }
-        Spacer(Modifier.preferredHeight(16.dp))
+        Spacer(Modifier.height(16.dp))
         Text("Others", style = MaterialTheme.typography.h3)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            Button(onClick = {}) {
+            Button(onClick = {
+                communicationViewModel.commsService?.sendString("#,location,geo:-33.746887,150.828035?q=19%20Tabitha%20Pl,%20Plumpton%20NSW%202761,\n")
+            }) {
                 Text(text = "Location")
             }
             Button(onClick = {}) {

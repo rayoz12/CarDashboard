@@ -4,11 +4,13 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import me.rytek.cardashboardclient.interfaces.ConnectionInterface
 import me.rytek.cardashboardclient.interfaces.mqtt.MQTTInterface
 import me.rytek.cardashboardclient.interfaces.wifi.WifiInterface
 import me.rytek.cardashboardclient.viewmodel.BTConfiguration
@@ -25,15 +27,29 @@ class CommunicationService(settingsViewModel: SettingsViewModel, private val app
 
     private var wifiConfig = WifiConfiguration(null, null)
     private var btConfig = BTConfiguration(null, null)
-    private var mqttConfig = MQTTConfiguration(null, null)
+    private var mqttConfig = MQTTConfiguration("tcp://maqiatto.com:1883", "glass2k@ymail.com/CarDashboard")
 
     private val wifiInterface = WifiInterface()
     private val mqttInterface = MQTTInterface(applicationCtx)
 
+    companion object {
+        const val TAG = "CommunicationService"
+    }
+
+
     init {
         // Set up observers on the view model
         GlobalScope.launch {
+            settingsViewModel.MQTTConfig.collect {
+                Log.d(TAG, "Collecting MQTT $it")
+                mqttConfig = it
+                if (mqttInterface.isConnected) {
+                    mqttDisconnect()
+                    mqttConnect()
+                }
+            }
             settingsViewModel.wifiConfig.collect {
+                Log.d(TAG, "Collecting Wifi $it")
                 wifiConfig = it
                 if (wifiInterface.isConnected) {
                     wifiDisconnect()
@@ -42,13 +58,6 @@ class CommunicationService(settingsViewModel: SettingsViewModel, private val app
             }
             settingsViewModel.BTConfig.collect {
                 btConfig = it
-            }
-            settingsViewModel.MQTTConfig.collect {
-                mqttConfig = it
-                if (mqttInterface.isConnected) {
-                    mqttDisconnect()
-                    mqttConnect()
-                }
             }
         }
     }
@@ -80,6 +89,10 @@ class CommunicationService(settingsViewModel: SettingsViewModel, private val app
         wifiInterface.stop()
     }
 
+    fun isWifiConnected(): Boolean {
+        return wifiInterface.isConnected
+    }
+
     fun mqttToggle() {
         if (mqttInterface.isConnected) {
             mqttDisconnect()
@@ -91,6 +104,7 @@ class CommunicationService(settingsViewModel: SettingsViewModel, private val app
 
     fun mqttConnect(): Boolean {
         if (mqttConfig.address == null || mqttConfig.topic == null) {
+            Log.d(TAG, "Config is Null")
             return false
         }
         mqttInterface.init(mqttConfig)
@@ -102,6 +116,31 @@ class CommunicationService(settingsViewModel: SettingsViewModel, private val app
         mqttInterface.stop()
     }
 
+    fun isMQTTConnected(): Boolean {
+        return mqttInterface.isConnected
+    }
 
+    //API level function to send data through
+    fun sendString(str: String) {
+        send(str);
+    }
+
+    // This function choses an active interface according to priorities
+    private fun send(data: String) {
+        var activeInterface: ConnectionInterface? = null
+
+        if (isMQTTConnected()) {
+            activeInterface = mqttInterface
+        }
+        else if (isWifiConnected()) {
+            activeInterface = wifiInterface
+        }
+
+        if (activeInterface == null) {
+            throw Exception("There is no active connection")
+        }
+
+        activeInterface.send(data)
+    }
 
 }
