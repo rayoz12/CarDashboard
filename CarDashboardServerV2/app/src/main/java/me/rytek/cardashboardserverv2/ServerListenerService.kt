@@ -42,6 +42,7 @@ class ServerListenerService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder {
+        connectionManager.setContext(this)
         return binder
     }
 

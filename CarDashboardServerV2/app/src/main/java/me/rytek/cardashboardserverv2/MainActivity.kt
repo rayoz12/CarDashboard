@@ -1,7 +1,14 @@
 package me.rytek.cardashboardserverv2
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -16,45 +23,106 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.rytek.cardashboardserverv2.ui.theme.CarDashboardServerV2Theme
+import android.os.Build
+import android.provider.Settings
+import androidx.core.app.ActivityCompat.startActivityForResult
+import android.annotation.TargetApi
+import android.app.Activity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 
 class MainActivity : ComponentActivity() {
-    private lateinit var mService: ServerListenerService
-    private var mBound: Boolean = false
+    val viewModel: MainActivityViewModel = MainActivityViewModel()
+
+
+    /** Defines callbacks for service binding, passed to bindService()  */
+    private val connection = object : ServiceConnection {
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            val binder = service as ServerListenerService.LocalBinder
+            viewModel.setService(binder.getService())
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            viewModel.clearService()
+        }
+    }
+
+    val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+        if (!Settings.canDrawOverlays(this)) {
+            // You don't have permission
+            checkPermission()
+        }
+    }
+
+    fun checkPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startForResult.launch(intent)
+            }
+        }
+    }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Bind to LocalService
+        Intent(this, ServerListenerService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+
+
         setContent {
             CarDashboardServerV2Theme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MainActivityComposable()
+                    MainActivityComposable(viewModel)
                 }
             }
         }
+
+        checkPermission()
     }
+
+
+
 }
 
 @Composable
-fun MainActivityComposable() {
+fun MainActivityComposable(viewModel: MainActivityViewModel) {
     val context = LocalContext.current
+    val state: String by viewModel.state.observeAsState("Not Connected")
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text(text = "Car Dashboard Server") }
         )
-        var state by remember { mutableStateOf("Not Connected") }
+
         Text(text = "State: $state")
         Box(modifier = Modifier.padding(vertical = 10.dp))
         Button(onClick = {
             GlobalScope.launch {
-                state = "Connecting..."
-                val success = connectionManager.mqttConnect()
-                state = if (success) "Connected & Subscribed" else "Connection Error"
+                if (viewModel.mService == null) {
+                    Log.e("MainActivityComposeable", "Listener is null!")
+                }
+                else {
+                    viewModel.mService?.mqttStart()
+                }
+
             }
 
         }) {
@@ -72,9 +140,12 @@ fun MainActivityComposable() {
         Box(modifier = Modifier.padding(vertical = 10.dp))
         Button(onClick = {
             GlobalScope.launch {
-                state = "Disconnecting..."
-                val success = connectionManager.mqttDisconnect()
-                state = if (success) "Not Connected" else "Failed to Disconnect!"
+                if (viewModel.mService == null) {
+                    Log.e("MainActivityComposeable", "Listener is null!")
+                }
+                else {
+                    viewModel.mService?.mqttStop()
+                }
             }
         }) {
             Text("Disconnect")
@@ -86,6 +157,6 @@ fun MainActivityComposable() {
 @Composable
 fun DefaultPreview() {
     CarDashboardServerV2Theme {
-        MainActivityComposable()
+        MainActivityComposable(viewModel = MainActivityViewModel())
     }
 }

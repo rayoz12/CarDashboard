@@ -122,6 +122,9 @@ class MQTTInterface {
 
     suspend fun disconnect(): Boolean =
         suspendCoroutine { cont ->
+            if (!mqttClient.isConnected) {
+                cont.resume(true)
+            }
             try {
                 mqttClient.disconnect(null, object : IMqttActionListener {
                     override fun onSuccess(asyncActionToken: IMqttToken?) {
