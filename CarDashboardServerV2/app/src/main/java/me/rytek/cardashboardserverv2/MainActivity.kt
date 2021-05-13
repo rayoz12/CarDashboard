@@ -33,6 +33,7 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat.startActivityForResult
 import android.annotation.TargetApi
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
     fun checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "Please grant permission to appear on top, So we can launch applications", Toast.LENGTH_LONG).show()
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")

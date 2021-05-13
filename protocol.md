@@ -36,3 +36,7 @@ These examples contain the message without base64 encoding
 |Location (to be opened in Waze or Maps)|#,location,geo:-33.746887,150.828035?q=19%20Tabitha%20Pl,%20Plumpton%20NSW%202761,\n| The q parameter is a friendly name for the location and must be URI encoded
 |Youtube Link|#,youtube,https://www.youtube.com/watch?v=EwTZ2xpQwpA,\n|
 |Web page|#,url,https://news.ycombinator.com/news,\n|
+
+
+Location Example Encoded:
+#,location,Z2VvOi0zMy43NDY4ODcsMTUwLjgyODAzNT9xPTE5JTIwVGFiaXRoYSUyMFBsLCUyMFBsdW1wdG9uJTIwTlNXJTIwMjc2MQ==,\n
