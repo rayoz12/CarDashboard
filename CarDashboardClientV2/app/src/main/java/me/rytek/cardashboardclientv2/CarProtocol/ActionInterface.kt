@@ -9,6 +9,7 @@ enum class MessageType {
 }
 
 interface ActionInterface {
-    val messageType: MessageType
+    var sourceDevice: String
+    var messageType: MessageType
     fun serialise(): String
 }

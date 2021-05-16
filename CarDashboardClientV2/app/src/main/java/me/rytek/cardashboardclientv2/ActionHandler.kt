@@ -36,7 +36,7 @@ class ActionHandler(private val context: Context) {
     fun handleAction(message: String) {
         if (!isValidMessage(message)) return
         val parts: List<String> = message.split(",")
-        val actionType = parts[1]
+        val actionType = parts[2]
 
         // Get the message
         val action: ActionInterface = when (actionType) {

@@ -14,6 +14,10 @@ class ConnectionManager() {
 
     private var context: Context? = null
 
+    private var state = "Not Connected"
+
+    var onStateUpdate: ((newState: String) -> Unit)? = null
+
     private var actionHandler: ActionHandler? = null
     private val mqttInterface = MQTTInterface()
 
@@ -33,6 +37,12 @@ class ConnectionManager() {
             throw Exception("Context is not defined! Call setContext(ctx)!")
         }
 
+        if (state == "Connecting..." || state == "Connected. Subscribing..." || state == "Subscribed") {
+            return false;
+        }
+
+        onStateUpdate?.invoke("Connecting...")
+
         val success = mqttInterface.connect(
             context!!,
             serverURI = mqttBroker,
@@ -41,13 +51,36 @@ class ConnectionManager() {
             callback = this::handleMqttMessage
         )
         if (!success) {
+            onStateUpdate?.invoke("Connection Error")
             return success
         }
-        return mqttInterface.subscribe(mqttTopic)
+        onStateUpdate?.invoke("Connected. Subscribing...")
+
+        return if (mqttInterface.subscribe(mqttTopic)) {
+            onStateUpdate?.invoke("Subscribed")
+            true
+        } else {
+            onStateUpdate?.invoke("Failed to Subscribe")
+            false
+        }
+
     }
 
     suspend fun mqttDisconnect(): Boolean {
-        return mqttInterface.disconnect()
+
+        if (state == "Disconnecting..." || state == "Disconnected" || state == "Not Connected") {
+            return false
+        }
+
+        onStateUpdate?.invoke("Disconnecting...")
+        return if (mqttInterface.disconnect()) {
+            onStateUpdate?.invoke("Disconnected")
+            true
+        }
+        else {
+            onStateUpdate?.invoke("Failed to Disconnect")
+            false
+        }
     }
 
     suspend fun sendAction(action: ActionInterface): Boolean {

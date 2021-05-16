@@ -4,38 +4,38 @@ import android.util.Base64
 import java.nio.charset.StandardCharsets
 
 
-class SpotifyPlayAction(val spotifyURI: String) : ActionInterface {
-    override val messageType = MessageType.SPOTIFY_PLAY
+class SpotifyPlayAction(override var sourceDevice: String, val spotifyURI: String) : ActionInterface {
+    override var messageType = MessageType.SPOTIFY_PLAY
     override fun serialise(): String {
-        return "#,spotify-play,$spotifyURI,\n"
+        return "#,$sourceDevice,spotify-play,$spotifyURI,\n"
     }
 }
 
-class SpotifyAddAction(val spotifyURI: String) : ActionInterface {
-    override val messageType = MessageType.SPOTIFY_ADD
+class SpotifyAddAction(override var sourceDevice: String, val spotifyURI: String) : ActionInterface {
+    override var messageType = MessageType.SPOTIFY_ADD
     override fun serialise(): String {
-        return "#,spotify-add,$spotifyURI,\n"
+        return "#,$sourceDevice,spotify-add,$spotifyURI,\n"
     }
 }
 
-class YoutubeAction(val youtubeURI: String) : ActionInterface {
-    override val messageType = MessageType.YOUTUBE
+class YoutubeAction(override var sourceDevice: String, val youtubeURI: String) : ActionInterface {
+    override var messageType = MessageType.YOUTUBE
     override fun serialise(): String {
-        return "#,youtube,$youtubeURI,\n"
+        return "#,$sourceDevice,youtube,$youtubeURI,\n"
     }
 }
 
-class WebPageAction(val url: String) : ActionInterface {
-    override val messageType = MessageType.WEB_PAGE
+class WebPageAction(override var sourceDevice: String, val url: String) : ActionInterface {
+    override var messageType = MessageType.WEB_PAGE
     override fun serialise(): String {
-        return "#,url,$url,\n"
+        return "#,$sourceDevice,url,$url,\n"
     }
 }
 
-class LocationAction(val location: String) : ActionInterface {
-    override val messageType = MessageType.LOCATION
+class LocationAction(override var sourceDevice: String, val location: String) : ActionInterface {
+    override var messageType = MessageType.LOCATION
     override fun serialise(): String {
         val encodedString = Base64.encodeToString(location.toByteArray(StandardCharsets.UTF_8), Base64.DEFAULT)
-        return "#,location,$encodedString,\n"
+        return "#,$sourceDevice,location,$encodedString,\n"
     }
 }
